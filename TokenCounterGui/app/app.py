@@ -5,8 +5,7 @@ import tempfile
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify, session
 
-# Add the parent directory to the path so we can import the token counter
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# codebase_token_counter is installed via pip install -e ., no need for sys.path modification
 from codebase_token_counter.token_counter import (
     process_repository, format_number, FILE_EXTENSIONS
 )
@@ -18,33 +17,29 @@ app = Flask(__name__,
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SESSION_TYPE'] = 'filesystem'
 
-# Define the models and their context windows
+# Define the models and their context windows (Updated per user request May 2025)
 LLM_MODELS = {
     "OpenAI": {
-        "GPT-3.5 (4K)": 4096,
-        "GPT-4 (8K)": 8192,
-        "GPT-4 (32K)": 32768,
-        "GPT-4 Turbo (128K)": 128000,
+        "GPT-4.1 / mini (1M)": 1000000, # Combined as per user table
+        "GPT-4o / Turbo (128K)": 128000, # Combined as per user table
     },
     "Anthropic": {
-        "Claude 2 (100K)": 100000,
-        "Claude 3 Opus (200K)": 200000,
-        "Claude 3 Sonnet (200K)": 200000,
-        "Claude 3 Haiku (200K)": 200000,
+        "Claude 3.7 Sonnet (200K)": 200000,
     },
     "Google": {
-        "Gemini Pro (32K)": 32768,
-        "PaLM 2 (8K)": 8192,
+        "Gemini 2.5 Pro / Flash (1M)": 1000000, # Combined as per user table
     },
     "Meta": {
-        "Llama 2 (4K)": 4096,
-        "Code Llama (100K)": 100000,
+        "Llama 4 Scout (10M)": 10000000,
+    },
+    "Mistral": {
+        "Mistral Large 2 (128K)": 128000,
+        "Mistral Small 3.1 (128K)": 128000,
+        "Mistral NeMo (128K)": 128000,
     },
     "Other": {
-        "Mistral Large (32K)": 32768,
-        "Mixtral 8x7B (32K)": 32768,
-        "Yi-34B (200K)": 200000,
-        "Cohere Command (128K)": 128000,
+        "Cohere Command R+ (128K)": 128000,
+        "DBRX Instruct (32K)": 32768,
     }
 }
 
@@ -114,38 +109,59 @@ def get_drives():
 def analyze():
     data = request.get_json()
     path = data.get('directory')
-    
-    # Check if the path is a file or directory
-    is_file = os.path.isfile(path)
-    is_dir = os.path.isdir(path)
-    
-    # Ensure the path exists
-    if not (is_file or is_dir):
-        return jsonify({
-            'error': f"Path does not exist: {path}"
-        }), 400
-    
+    options = data.get('options', {}) # Get exclusion options
+
+    # Ensure the path exists (process_repository handles file/dir check internally now)
+    if not path or not os.path.exists(path):
+         return jsonify({'error': f"Path does not exist or is not accessible: {path}"}), 400
+
     try:
-        # Process either a single file or a directory
-        if is_file:
-            # For a single file, we'll create similar output structure as for a directory
-            file_extension = os.path.splitext(path)[1].lower().lstrip('.')
-            if not file_extension:
-                file_extension = 'no_extension'
-                
-            # Process the individual file
-            with open(path, 'r', encoding='utf-8', errors='replace') as f:
-                content = f.read()
-                token_count = len(content.split())  # Simple token count
-                
-            # Create the same structure as process_repository but for a single file
-            extension_stats = {file_extension: token_count}
-            file_counts = {file_extension: 1}
-            total_tokens = token_count
-        else:
-            # Process a directory as before
-            total_tokens, extension_stats, file_counts = process_repository(path)
-        
+        # Prepare exclusion arguments based on options
+        exclude_dirs_set = set()
+        exclude_patterns_list = []
+
+        if options.get('excludeTests'):
+            # Exclude common test directory names
+            exclude_dirs_set.update(['tests', '__tests__', 'test', 'spec', 'specs'])
+            # Exclude common test file patterns
+            exclude_patterns_list.extend(['*_test.py', 'test_*.py', '*.spec.js', '*.test.js', '*.spec.ts', '*.test.ts'])
+
+        if options.get('excludeDocs'):
+            # Exclude common documentation directory names
+            exclude_dirs_set.update(['docs', 'documentation', 'doc'])
+            # Exclude common documentation file patterns/extensions
+            exclude_patterns_list.extend(['*.md', '*.rst', '*.wiki', '*.adoc'])
+
+        if options.get('excludeDependencies'):
+            # Exclude common dependency/build artifact directory names/patterns
+            # Using path patterns (with '/') to avoid excluding unrelated files/dirs
+            exclude_patterns_list.extend([
+                'node_modules/',
+                'vendor/',
+                'packages/',
+                'dist/',
+                'build/',
+                'target/',
+                'out/',
+                'bin/',
+                'obj/',
+                '.next/',
+                '.nuxt/',
+                '.svelte-kit/',
+                '.cache/',
+                '*.egg-info/',
+            ])
+            exclude_dirs_set.update(['bower_components']) # Also exclude by name
+
+        # Call the updated process_repository with exclusions
+        total_tokens, extension_stats, file_counts = process_repository(
+            path,
+            exclude_dirs=exclude_dirs_set,
+            exclude_patterns=exclude_patterns_list
+        )
+
+        # --- Post-processing remains largely the same ---
+
         # Group results by technology category
         tech_stats = {}
         tech_file_counts = {}
@@ -203,14 +219,30 @@ def analyze():
 @app.route('/browse', methods=['POST'])
 def browse_directories():
     data = request.get_json()
-    current_path = data.get('path', '/')
+    requested_path = data.get('path', '/')
     
+    # Normalize path
+    current_path = os.path.normpath(requested_path)
+    # Ensure it's absolute (should be, but belt-and-suspenders)
+    if not os.path.isabs(current_path):
+         current_path = os.path.abspath(current_path)
+
+    app.logger.info(f"Browsing requested path: {requested_path}, normalized to: {current_path}") # Logging
+
     if not os.path.isdir(current_path):
+        app.logger.error(f"Path is not a directory: {current_path}") # Logging
         return jsonify({
-            'error': f"Directory does not exist: {current_path}"
+            'error': f"Path is not a valid directory: {current_path}"
         }), 400
     
     try:
+        # Check read access
+        if not os.access(current_path, os.R_OK):
+             app.logger.error(f"No read access for directory: {current_path}") # Logging
+             return jsonify({
+                 'error': f"Permission denied: Cannot read directory {current_path}"
+             }), 403 # Use 403 Forbidden
+
         # Get parent directory
         parent_path = os.path.dirname(current_path)
         parent_info = {
@@ -222,9 +254,16 @@ def browse_directories():
         
         # Get all items in the directory
         items = []
-        for item in os.listdir(current_path):
+        listed_items = os.listdir(current_path)
+        app.logger.info(f"Found {len(listed_items)} items in {current_path}") # Logging
+        for item in listed_items:
             full_path = os.path.join(current_path, item)
-            is_dir = os.path.isdir(full_path)
+            # Use try-except for isdir in case of broken symlinks etc.
+            try:
+                 is_dir = os.path.isdir(full_path)
+            except OSError:
+                 is_dir = False # Treat inaccessible items as non-directories
+                 app.logger.warning(f"Could not determine type for: {full_path}")
             
             # Skip hidden files starting with . (like .git)
             if item.startswith('.'):

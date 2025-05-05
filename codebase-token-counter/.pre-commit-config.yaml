@@ -1,0 +1,24 @@
+default_install_hook_types: [pre-commit, pre-push, commit-msg]
+default_stages: [pre-commit] # default stage(s) for hooks without the stages property set
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+    - id: check-yaml
+      args: [--allow-multiple-documents]
+    - id: check-added-large-files
+      args: [--maxkb=1000]
+    - id: mixed-line-ending
+      args: [--fix=lf]
+    - id: check-merge-conflict
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.20.0
+    hooks:
+      - id: commitlint
+        name: lint commit message for Conventional Commits compliance
+        additional_dependencies: ['@commitlint/config-conventional']
+        stages: [commit-msg]
+        args:
+          - "--extends=@commitlint/config-conventional"

@@ -15,58 +15,65 @@
 }
 
 .dark-theme {
-    /* High contrast dark theme with truly white text */
-    --bg: #121212;
-    --surface: #1e1e1e;
-    --surface-hover: #2d2d2d;
-    --surface-select: #2979ff;
-    --primary: #64b5f6;
-    --primary-dark: #2979ff;
-    --text: #ffffff;         /* Pure white text for maximum readability */
-    --text-secondary: #e0e0e0; /* Very light gray for secondary text */
-    --border: #424242;
+    /* Dark theme variables */
+    --bg: #121212;             /* Dark background */
+    --surface: #1e1e1e;        /* Slightly lighter surface (cards, tables) */
+    --surface-hover: #2a2a2a;   /* Hover state */
+    --surface-select: #0d6efd;  /* Use Bootstrap primary blue for selection */
+    --primary: #0d6efd;         /* Bootstrap primary blue */
+    --primary-dark: #0a58ca;    /* Darker blue */
+    --text: #e0e0e0;            /* Light gray text (not pure white) */
+    --text-secondary: #9e9e9e;  /* Medium gray secondary text */
+    --border: #424242;          /* Darker border */
 }
 
-/* Additional dark theme overrides for maximum readability */
-.dark-theme .text-muted,
+/* General dark theme text */
+.dark-theme body,
 .dark-theme .card-text,
 .dark-theme .form-label,
 .dark-theme p,
 .dark-theme li,
-.dark-theme .card-title,
-.dark-theme h6,
 .dark-theme .form-check-label,
-.dark-theme span,
-.dark-theme .breadcrumb-item {
-    color: var(--text) !important; /* Force white text everywhere */
+.dark-theme span {
+    color: var(--text);
 }
 
-/* Ensure all icons are visible in dark theme */
+.dark-theme .text-muted {
+    color: var(--text-secondary) !important;
+}
+
+/* Headers */
+.dark-theme h1, .dark-theme h2, .dark-theme h3, .dark-theme h4, .dark-theme h5, .dark-theme h6,
+.dark-theme .card-title,
+.dark-theme .navbar-brand {
+    color: var(--text); /* Ensure headers are light gray */
+}
+
+/* Icons */
 .dark-theme .bi {
-    color: var(--primary) !important;
-}
-
-/* Fix specifically for the drive browser */
-.dark-theme #drives-browser h6,
-.dark-theme #drives-list span,
-.dark-theme #drives-list .bi,
-.dark-theme #directory-browser span,
-.dark-theme #directory-browser .bi {
-    color: var(--text) !important;
+    color: var(--primary); /* Use primary blue for icons */
 }
 
 /* Make sure disabled buttons still have readable text */
 .dark-theme .list-group-item.disabled,
-.dark-theme .list-group-item:disabled {
-    color: #c0c0c0 !important;
-    background-color: var(--surface);
+.dark-theme .list-group-item:disabled,
+.dark-theme .btn:disabled {
+    color: #616161 !important; /* Darker gray for disabled text */
+    background-color: var(--surface-hover);
+    border-color: var(--border);
 }
 
-/* Fix for breadcrumbs */
+/* Breadcrumbs */
+.dark-theme .breadcrumb-item a {
+    color: var(--primary);
+    text-decoration: none;
+}
+.dark-theme .breadcrumb-item a:hover {
+    text-decoration: underline;
+}
 .dark-theme .breadcrumb-item.active {
-    color: var(--text) !important;
+    color: var(--text-secondary);
 }
-
 .dark-theme .breadcrumb-item+.breadcrumb-item::before {
     color: var(--text-secondary);
 }
@@ -162,12 +169,42 @@ body {
     background-color: #1a1a1a !important;
 }
 
+/* Dark theme table styling - Simplified */
 .dark-theme .table {
+    color: var(--text); /* Light gray text */
+    border-color: var(--border);
+}
+
+.dark-theme .table th,
+.dark-theme .table td {
+    border-color: var(--border);
+    background-color: transparent; /* Let parent control background */
+}
+
+.dark-theme thead th {
+    color: var(--text); /* Light gray header text */
+    background-color: var(--surface-hover); /* Slightly lighter header background */
+}
+
+/* Ensure table within card uses card background */
+.dark-theme .card .table {
+     background-color: var(--surface);
+}
+
+/* Striping */
+.dark-theme .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--surface-hover); /* Slightly lighter stripe */
+    color: var(--text);
+}
+.dark-theme .table-striped > tbody > tr:nth-of-type(even) > * {
+    background-color: var(--surface); /* Base surface color */
     color: var(--text);
 }
 
-.dark-theme .table-striped tbody tr:nth-of-type(odd) {
-    background-color: var(--surface-hover);
+/* Hover */
+.dark-theme .table-hover > tbody > tr:hover > * {
+    background-color: #2f2f2f; /* Darker hover */
+    color: var(--text);
 }
 
 .dark-theme .form-control, 

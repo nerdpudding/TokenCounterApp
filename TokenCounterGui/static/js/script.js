@@ -227,61 +227,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 } else {
                     // Regular directory
+                    // Regular directory - Simplified: No separate select button
                     itemElement.className = 'list-group-item list-group-item-action d-flex align-items-center';
                     itemElement.innerHTML = `
                         <i class="bi bi-folder me-2"></i>
                         <span>${item.name}</span>
-                        <div class="ms-auto">
-                            <button class="btn btn-sm btn-outline-primary select-folder-btn" title="Select this folder for analysis">
-                                <i class="bi bi-check-circle"></i>
-                            </button>
-                        </div>
                     `;
                 }
-                
-                // Directory navigation - Single click navigates into the directory
+
+                // Directory click: Selects AND navigates
                 itemElement.addEventListener('click', function(e) {
-                    // Don't navigate if clicking on the Select button 
-                    if (e.target.closest('.select-folder-btn')) {
-                        e.stopPropagation();
-                        return;
-                    }
-                    loadDirectory(item.path);
-                });
-                
-                // Add click handler for the select folder button
-                const selectBtn = itemElement.querySelector('.select-folder-btn');
-                if (selectBtn) {
-                    selectBtn.addEventListener('click', function(e) {
-                        e.stopPropagation(); // Prevent directory navigation
+                    e.preventDefault(); // Prevent any default button behavior
+                    if (!item.is_parent) { // Don't select parent dir, just navigate
                         selectDirectory(item.path, item.name);
-                    });
-                }
-                
-                // Directory selection - Long press (right-click) as alternative method
-                itemElement.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    selectDirectory(item.path, item.name);
-                    
-                    // Show a small "selected" toast or indicator
-                    const toast = document.createElement('div');
-                    toast.className = 'position-fixed bottom-0 end-0 p-3';
-                    toast.style.zIndex = '11';
-                    toast.innerHTML = `
-                        <div class="toast show" role="alert">
-                            <div class="toast-header">
-                                <i class="bi bi-check-circle me-2 text-success"></i>
-                                <strong class="me-auto">Folder Selected</strong>
-                                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                            </div>
-                            <div class="toast-body">
-                                Selected: ${item.name}
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 2000);
+                    }
+                    loadDirectory(item.path); // Navigate into dir (or parent)
                 });
+
+                // Removed contextmenu listener for directories
             } else {
                 // Regular file (now selectable)
                 itemElement.className = 'list-group-item list-group-item-action d-flex align-items-center';
@@ -314,10 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     selectFile(item.path, item.name);
                 });
                 
-                itemElement.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    selectFile(item.path, item.name);
-                });
+                // Removed contextmenu listener for files
             }
             
             itemsList.appendChild(itemElement);
@@ -367,6 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 link.textContent = part;
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
+                    console.log('Navigating to breadcrumb path:', buildPath); // Debugging line
                     loadDirectory(buildPath);
                 });
                 item.appendChild(link);
@@ -388,39 +349,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.classList.add('active');
             }
         });
+        // Removed toast notification
     }
-    
+
     // Select file for analysis
     function selectFile(path, name) {
         selectedPathInput.value = path;
         analyzeBtn.disabled = false;
-        
+
         // Highlight the selected item visually
         document.querySelectorAll('.list-group-item').forEach(item => {
             item.classList.remove('active');
-            if (item.querySelector('span').textContent === name) {
+            // Ensure item has a span before trying to access textContent
+            const span = item.querySelector('span');
+            if (span && span.textContent === name) {
                 item.classList.add('active');
             }
         });
-        
-        // Show a small "selected" toast for file selection
-        const toast = document.createElement('div');
-        toast.className = 'position-fixed bottom-0 end-0 p-3';
-        toast.style.zIndex = '11';
-        toast.innerHTML = `
-            <div class="toast show" role="alert">
-                <div class="toast-header">
-                    <i class="bi bi-check-circle me-2 text-success"></i>
-                    <strong class="me-auto">File Selected</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    Selected file: ${name}
-                </div>
-            </div>
-        `;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
+        // Removed toast notification
     }
     
     // Analyze repository
