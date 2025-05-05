@@ -78,8 +78,7 @@ This tool provides a user-friendly interface on top of the `codebase-token-count
 
 ```bash
 docker-compose down
----
-
+```
 ## License
 
 MIT License - Feel free to use and modify as needed.
