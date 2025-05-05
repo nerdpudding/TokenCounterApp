@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const directoryBrowser = document.getElementById('directory-browser');
     const drivesBrowser = document.getElementById('drives-browser');
     const drivesList = document.getElementById('drives-list');
-    const currentPathInput = document.getElementById('current-path');
+    // const currentPathInput = document.getElementById('current-path'); // Removed this element
     const selectedPathInput = document.getElementById('selected-path');
     const analyzeBtn = document.getElementById('analyze-btn');
     const refreshDirBtn = document.getElementById('refresh-dir');
@@ -146,11 +146,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Refresh current directory
+    // Refresh current directory (Now refreshes based on selected path if available, else root)
     function refreshCurrentDirectory() {
-        if (currentPathInput.value) {
-            loadDirectory(currentPathInput.value);
-        }
+        const path_to_refresh = selectedPathInput.value || '/'; // Use selected path or default to root
+        loadDirectory(path_to_refresh);
     }
     
     // Load directory contents
@@ -177,8 +176,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>`;
                 return;
             }
-            
-            currentPathInput.value = data.current_path;
+
+            // currentPathInput.value = data.current_path; // Removed reference
             displayDirectoryContents(data);
             updateBreadcrumbs(data.current_path, data.path_parts);
         })
@@ -325,10 +324,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const link = document.createElement('a');
                 link.href = '#';
                 link.textContent = part;
+                // Capture the correct path for this specific link
+                const pathToLoad = buildPath;
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    console.log('Navigating to breadcrumb path:', buildPath); // Debugging line
-                    loadDirectory(buildPath);
+                    console.log('Navigating to breadcrumb path:', pathToLoad); // Debugging line
+                    loadDirectory(pathToLoad);
                 });
                 item.appendChild(link);
             }
