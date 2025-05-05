@@ -1,0 +1,278 @@
+/* Theme variables */
+:root {
+    /* Light theme (default) */
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --surface-hover: #e9ecef;
+    --surface-select: #cfe2ff;
+    --primary: #0d6efd;
+    --primary-dark: #0a58ca;
+    --text: #212529;
+    --text-secondary: #6c757d;
+    --border: #dee2e6;
+    
+    /* Dark theme variables will be applied via .dark-theme class */
+}
+
+.dark-theme {
+    /* High contrast dark theme with truly white text */
+    --bg: #121212;
+    --surface: #1e1e1e;
+    --surface-hover: #2d2d2d;
+    --surface-select: #2979ff;
+    --primary: #64b5f6;
+    --primary-dark: #2979ff;
+    --text: #ffffff;         /* Pure white text for maximum readability */
+    --text-secondary: #e0e0e0; /* Very light gray for secondary text */
+    --border: #424242;
+}
+
+/* Additional dark theme overrides for maximum readability */
+.dark-theme .text-muted,
+.dark-theme .card-text,
+.dark-theme .form-label,
+.dark-theme p,
+.dark-theme li,
+.dark-theme .card-title,
+.dark-theme h6,
+.dark-theme .form-check-label,
+.dark-theme span,
+.dark-theme .breadcrumb-item {
+    color: var(--text) !important; /* Force white text everywhere */
+}
+
+/* Ensure all icons are visible in dark theme */
+.dark-theme .bi {
+    color: var(--primary) !important;
+}
+
+/* Fix specifically for the drive browser */
+.dark-theme #drives-browser h6,
+.dark-theme #drives-list span,
+.dark-theme #drives-list .bi,
+.dark-theme #directory-browser span,
+.dark-theme #directory-browser .bi {
+    color: var(--text) !important;
+}
+
+/* Make sure disabled buttons still have readable text */
+.dark-theme .list-group-item.disabled,
+.dark-theme .list-group-item:disabled {
+    color: #c0c0c0 !important;
+    background-color: var(--surface);
+}
+
+/* Fix for breadcrumbs */
+.dark-theme .breadcrumb-item.active {
+    color: var(--text) !important;
+}
+
+.dark-theme .breadcrumb-item+.breadcrumb-item::before {
+    color: var(--text-secondary);
+}
+
+/* Improve alert contrast in dark mode */
+.dark-theme .alert-info {
+    background-color: #164b63;
+    color: #ffffff;
+    border-color: #125a7e;
+}
+
+.dark-theme .alert-warning {
+    background-color: #78350f;
+    color: #ffffff;
+    border-color: #92400e;
+}
+
+.dark-theme .alert-danger {
+    background-color: #7f1d1d;
+    color: #ffffff;
+    border-color: #991b1b;
+}
+
+.dark-theme .alert-success {
+    background-color: #14532d;
+    color: #ffffff;
+    border-color: #166534;
+}
+
+/* Base styles using CSS variables */
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.theme-switch {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.theme-switch input {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+.theme-switch-slider {
+    position: relative;
+    display: inline-block;
+    width: 45px;
+    height: 24px;
+    background-color: var(--text-secondary);
+    border-radius: 24px;
+    margin: 0 8px;
+    transition: 0.3s;
+}
+
+.theme-switch-slider:after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 18px;
+    transition: 0.3s;
+}
+
+.theme-switch input:checked + .theme-switch-slider {
+    background-color: var(--primary);
+}
+
+.theme-switch input:checked + .theme-switch-slider:after {
+    left: calc(100% - 3px);
+    transform: translateX(-100%);
+}
+
+/* Dark mode overrides for Bootstrap components */
+.dark-theme .card {
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+.dark-theme .card-header {
+    background-color: var(--surface-hover);
+    border-color: var(--border);
+}
+
+.dark-theme .navbar-dark {
+    background-color: #1a1a1a !important;
+}
+
+.dark-theme .table {
+    color: var(--text);
+}
+
+.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--surface-hover);
+}
+
+.dark-theme .form-control, 
+.dark-theme .input-group-text {
+    background-color: var(--surface-hover);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.dark-theme .form-control:focus {
+    background-color: var(--surface-hover);
+    color: var(--text);
+}
+
+.dark-theme .border {
+    border-color: var(--border) !important;
+}
+
+.dark-theme .nav-tabs .nav-link.active {
+    background-color: var(--surface);
+    color: var(--primary);
+    border-color: var(--border);
+    border-bottom-color: var(--surface);
+}
+
+.dark-theme .nav-tabs .nav-link {
+    color: var(--text);
+}
+
+.dark-theme .tab-content {
+    background-color: var(--surface);
+    border-color: var(--border) !important;
+}
+
+/* List group styling for location selection */
+.dark-theme .list-group-item {
+    background-color: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.dark-theme .list-group-item:hover {
+    background-color: var(--surface-hover);
+}
+
+.dark-theme .list-group-item.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Custom styling for location list */
+.location-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.location-btn i {
+    font-size: 1.1rem;
+    min-width: 24px;
+    color: var(--primary);
+}
+
+/* Directory browser styles */
+.clickable-dir {
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    transition: background-color 0.2s;
+}
+
+.clickable-dir:hover {
+    background-color: var(--surface-hover);
+}
+
+.clickable-dir.selected {
+    background-color: var(--surface-select);
+    font-weight: bold;
+}
+
+.clickable-dir i {
+    margin-right: 5px;
+    color: var(--text-secondary);
+}
+
+.parent-dir i {
+    color: var(--primary);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-hover);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-secondary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Counter GUI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-code-square me-2"></i>Token Counter GUI
+            </a>
+            <div class="ms-auto">
+                <label class="theme-switch">
+                    <i class="bi bi-sun-fill text-warning"></i>
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="theme-switch-slider"></span>
+                    <i class="bi bi-moon-fill text-light"></i>
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Select Project to Analyze</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- File system navigation -->
+                        <div class="d-flex align-items-center mb-3">
+                            <button id="show-drives-btn" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-hdd-stack me-1"></i> Mounted Drives
+                            </button>
+                            
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="current-path" value="" readonly>
+                                <button class="btn btn-outline-secondary" type="button" id="refresh-dir">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Path breadcrumbs -->
+                        <nav id="path-breadcrumb" class="mb-3" aria-label="breadcrumb" style="display: none;">
+                            <ol class="breadcrumb">
+                                <!-- Will be filled dynamically -->
+                            </ol>
+                        </nav>
+                        
+                        <!-- Drives selector (initially hidden) -->
+                        <div id="drives-browser" class="mb-3" style="display: none;">
+                            <h6 class="mb-2">Mounted Drives:</h6>
+                            <div id="drives-list" class="list-group">
+                                <!-- Will be filled dynamically -->
+                                <div class="text-center p-3">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Loading drives...</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- File/folder browser -->
+                        <div id="directory-browser" class="border rounded mb-3" style="height: 350px; overflow-y: auto; background-color: var(--surface);">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="text-center">
+                                    <i class="bi bi-hdd-stack fs-1 d-block mb-3"></i>
+                                    <p>Click the <strong>Mounted Drives</strong> button above to start browsing</p>
+                                    <button id="drives-init-btn" class="btn btn-primary mt-2">
+                                        <i class="bi bi-hdd-stack me-1"></i> Show Mounted Drives
+                                    </button>
+                                    <div class="mt-4 small text-muted">
+                                        <p><i class="bi bi-info-circle me-1"></i> <strong>Navigation Tips:</strong></p>
+                                        <ul class="text-start">
+                                            <li>Click on a folder to navigate into it</li>
+                                            <li>Right-click on a folder to select it for analysis</li>
+                                            <li>Click on a file to select it for analysis</li>
+                                            <li>Or type a path directly in the "Selected Project Directory" field</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected path and analyze button -->
+                        <div class="mb-3">
+                            <label for="selected-path" class="form-label">Selected Project Directory:</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="selected-path">
+                                <button class="btn btn-outline-secondary" type="button" id="path-apply-btn">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            </div>
+                            
+                            <button id="analyze-btn" class="btn btn-primary btn-lg w-100" disabled>
+                                <i class="bi bi-calculator me-2"></i>Analyze Token Count
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Advanced Options</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Choose what to include in the token count:</p>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="exclude-tests">
+                            <label class="form-check-label" for="exclude-tests">
+                                <strong>Exclude Test Directories</strong>
+                                <small class="d-block text-muted">Ignores tests/, __tests__/, spec/ folders</small>
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="exclude-docs">
+                            <label class="form-check-label" for="exclude-docs">
+                                <strong>Exclude Documentation</strong>
+                                <small class="d-block text-muted">Ignores docs/, documentation/, *.md files</small>
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="exclude-dependencies">
+                            <label class="form-check-label" for="exclude-dependencies">
+                                <strong>Exclude Dependencies</strong>
+                                <small class="d-block text-muted">Ignores node_modules/, vendor/, packages/ etc.</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div id="results-container" style="display: none;">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Token Analysis Results</h5>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="mb-4">Total Tokens: <span id="total-tokens" class="text-primary">0</span></h3>
+                            
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h4>Context Window Comparisons</h4>
+                                    <div id="models-container" class="mt-3">
+                                        <!-- Tabs for model categories -->
+                                        <ul class="nav nav-tabs" id="model-tabs" role="tablist">
+                                            {% for category in models %}
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link {% if loop.first %}active{% endif %}" 
+                                                        id="{{ category|lower }}-tab" 
+                                                        data-bs-toggle="tab" 
+                                                        data-bs-target="#{{ category|lower }}" 
+                                                        type="button" 
+                                                        role="tab" 
+                                                        aria-controls="{{ category|lower }}" 
+                                                        aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                                                    {{ category }}
+                                                </button>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        
+                                        <!-- Tab content for model categories -->
+                                        <div class="tab-content p-3 border border-top-0 rounded-bottom" id="model-tab-content">
+                                            {% for category, category_models in models.items() %}
+                                            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+                                                 id="{{ category|lower }}" 
+                                                 role="tabpanel" 
+                                                 aria-labelledby="{{ category|lower }}-tab">
+                                                <div class="row">
+                                                    {% for model, window in category_models.items() %}
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title">{{ model }}</h5>
+                                                                <div class="progress model-progress" data-model="{{ model }}">
+                                                                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4>Tokens by File Extension</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Extension</th>
+                                                    <th>Tokens</th>
+                                                    <th>Files</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="extensions-table">
+                                                <!-- Extension data will be inserted here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h4>Tokens by Technology</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Technology</th>
+                                                    <th>Tokens</th>
+                                                    <th>Files</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="technologies-table">
+                                                <!-- Technology data will be inserted here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading-container" style="display: none;">
+                    <div class="card">
+                        <div class="card-body text-center p-5">
+                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h3 class="text-primary">Analyzing repository...</h3>
+                            <p class="text-muted">This might take a while depending on the size of the codebase.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-container" style="display: none;">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body p-4">
+                            <h3 class="card-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Error</h3>
+                            <p id="error-message" class="card-text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="welcome-container" class="text-center p-5">
+                    <i class="bi bi-code-square" style="font-size: 5rem; color: var(--primary);"></i>
+                    <h2 class="mt-3">Welcome to Token Counter GUI</h2>
+                    <div class="card mt-4 mx-auto" style="max-width: 500px;">
+                        <div class="card-body">
+                            <h4 class="card-title">How to use:</h4>
+                            <ol class="text-start">
+                                <li class="mb-2">Choose a mounted drive from the left panel</li>
+                                <li class="mb-2">Browse to your project folder or file</li>
+                                <li class="mb-2">Select a folder or individual file to analyze</li>
+                                <li class="mb-2">Click "Analyze Token Count"</li>
+                            </ol>
+                            <p class="card-text mt-3">
+                                This will analyze your code and show how well it fits in various AI model context windows.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

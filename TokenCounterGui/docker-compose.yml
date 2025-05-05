@@ -1,0 +1,24 @@
+services:
+  token-counter-gui:
+    build:
+      context: ..
+      dockerfile: ./TokenCounterGui/Dockerfile
+    container_name: token-counter-gui
+    volumes:
+      # Mount your host directories/drives here. Examples:
+      
+      # Windows examples:
+      - d:/:/mnt/projects/d:ro  # Windows D: drive as read-only
+      - c:/:/mnt/projects/c:ro  # Windows C: drive as read-only
+      - g:/:/mnt/projects/g:ro  # Windows G: drive as read-only
+      
+      # Linux/Mac examples (commented out - uncomment and modify as needed):
+      # - /home:/mnt/projects/home:ro  # Linux home directory
+      # - /projects:/mnt/projects/projects:ro  # Custom project directory
+      # - /var/www:/mnt/projects/www:ro  # Web server directory
+      
+      # You can add more mount points here for other directories you want to analyze
+      # Format: - /path/on/host:/mnt/projects/name:ro
+    ports:
+      - "7654:7654"  # Using an uncommon port as requested
+    restart: unless-stopped
