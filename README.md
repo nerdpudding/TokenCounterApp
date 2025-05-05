@@ -20,6 +20,7 @@ This tool provides a user-friendly interface on top of the `codebase-token-count
 
 ---
 ## Features
+![TokenCounter_GUI](https://github.com/user-attachments/assets/77deda68-62a9-4eba-a48d-5fe1b439c5a8)
 
 -   **Web Interface:** Easy analysis via your browser.
 -   **File Browser:** Navigate mounted drives to select projects.
