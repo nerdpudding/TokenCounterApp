@@ -1,96 +1,83 @@
 # Token Counter GUI
 
-A browser-based graphical user interface for the Code Token Counter tool, packaged in Docker for easy deployment.
+A simple web-based GUI for analyzing code repository token counts, built using Flask and Docker.
 
+This tool provides a user-friendly interface on top of the `codebase-token-counter` command-line tool.
+
+**Credits:** The underlying token counting logic is based on the [liatrio/codebase-token-counter](https://github.com/liatrio/codebase-token-counter) project. This GUI version packages that logic with a web interface.
+
+---
+
+## Table of Contents
+- [Token Counter GUI](#token-counter-gui)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Setup and Run](#setup-and-run)
+  - [How to Use](#how-to-use)
+  - [Stopping the Application](#stopping-the-application)
+  - [docker-compose down](#docker-compose-down)
+  - [License](#license)
+
+---
 ## Features
 
-- **Web-based Interface**: Access token counting functionality through your browser
-- **Directory Browser**: Easily navigate and select directories to analyze
-- **Advanced Options**: Exclude tests, documentation, and dependencies
-- **Visual Results**: See token usage across different file types and LLM context windows
-- **Docker-based**: Easy setup with Docker and Docker Compose
+-   **Web Interface:** Easy analysis via your browser.
+-   **File Browser:** Navigate mounted drives to select projects.
+-   **Exclusion Options:** Attempt to exclude test, documentation, or dependency files/folders.
+-   **Visual Results:** View total tokens, breakdown by file type, and LLM context window comparisons.
 
-## Quick Start
+## Setup and Run
 
-1. Make sure you have [Docker](https://www.docker.com/products/docker-desktop/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
+1.  **Prerequisites:** Ensure you have [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose installed.
 
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/liatrio/codebase-token-counter.git
-   cd codebase-token-counter
-   ```
+2.  **Clone:** Clone this repository:
+    ```bash
+    # Replace with the actual URL of YOUR repository if different
+    git clone <your-repository-url>
+    cd TokenCounterApp
+    ```
 
-3. Navigate to the TokenCounterGui directory:
-   ```bash
-   cd TokenCounterGui
-   ```
-
-4. Build and start the container:
-   ```bash
-   docker-compose up -d
-   ```
-
-5. Open your browser and go to:
-   ```
-   http://localhost:7654
-   ```
-
-## Using the GUI
-
-1. **Navigate Directories**:
-   - Use the directory browser on the left to navigate through your file system
-   - Double-click on a directory to navigate into it
-   - Click on the parent directory (..) to go back
-   - Single-click on a directory to select it for analysis
-
-2. **Run Analysis**:
-   - Select a directory by clicking on it
-   - Click the "Analyze Tokens" button to start the analysis
-   - Wait for the results to appear (larger codebases will take longer)
-
-3. **View Results**:
-   - See the total token count at the top
-   - Browse tokens by file extension
-   - Browse tokens by technology/programming language
-   - Check how your codebase fits into different LLM context windows
-
-4. **Advanced Options**:
-   - Exclude test directories to focus on core code
-   - Exclude documentation files
-   - Exclude dependency directories like node_modules, venv, etc.
-
-## Customization
-
-### Mounting Different Directories
-
-By default, the application mounts your host's `/mnt/d` directory to `/mnt/projects` in the container. To mount different directories, edit the `docker-compose.yml` file:
-
-```yaml
-services:
-  token-counter-gui:
-    # ... other configuration ...
+3.  **Configure Mounts (Optional):**
+    -   Edit `docker-compose.yml`.
+    -   Modify the `volumes:` section to mount the host directories you want to analyze into `/mnt/projects` inside the container. Examples are provided for Windows, Linux, and Mac. Ensure the host paths exist.
+    ```yaml
     volumes:
-      - /your/host/path:/mnt/projects:ro  # Change this to your desired path
-      # You can add more mount points as needed
-```
+      # Example: Mount Windows D: drive
+      - d:/:/mnt/projects/d:ro
+      # Example: Mount Linux home
+      # - /home:/mnt/projects/home:ro
+      # Add other drives/directories as needed
+    ```
 
-### Changing the Port
+4.  **Build and Run:** From the `TokenCounterApp` directory, run:
+    ```bash
+    # Build the Docker image
+    docker-compose build
 
-If port 7654 is already in use on your system, you can change it in the `docker-compose.yml` file:
+    # Start the container in the background
+    docker-compose up -d
+    ```
 
-```yaml
-services:
-  token-counter-gui:
-    # ... other configuration ...
-    ports:
-      - "your-preferred-port:7654"  # Change the first number to your desired port
-```
+5.  **Access:** Open your web browser and navigate to:
+    ```
+    http://localhost:7654
+    ```
+    *(If you changed the port in `docker-compose.yml`, use your chosen port instead of 7654)*
 
-## Troubleshooting
+## How to Use
 
-- If you can't access the GUI, make sure the container is running with `docker ps`
-- Check the container logs with `docker-compose logs`
-- If you get permission errors when analyzing directories, make sure the mounted volumes have proper read permissions
+1.  **Select Drive:** Click the "Mounted Drives" button. Choose the drive/volume containing your project.
+2.  **Browse:** Click folders in the browser panel to navigate to your desired project directory or file.
+3.  **Select:** Clicking a folder or file automatically selects it for analysis (its path appears in the "Selected Project Directory" field).
+4.  **Advanced Options (Optional):** Toggle the switches to exclude tests, documentation, or dependencies. *(Note: Exclusion logic is based on common patterns and might not be perfect for all project structures).*
+5.  **Analyze:** Click the "Analyze Token Count" button.
+6.  **View Results:** The analysis results will appear on the right side.
+
+## Stopping the Application
+
+```bash
+docker-compose down
+---
 
 ## License
 
